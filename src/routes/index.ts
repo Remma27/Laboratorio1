@@ -1,6 +1,8 @@
 import { Router } from "express";
-import ClienteController from "../controller/ClienteController";
+import cliente from "./cliente";
 
-const routes=Router();
-routes.get('',ClienteController.getAll);
+const routes = Router();
+
+routes.use("/Cliente", cliente);
+
 export default routes;
