@@ -1,27 +1,25 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm"
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm"
+import { Vendedor } from "./Vendedor";
 
 @Entity()
 export class Cliente {
 
     @PrimaryGeneratedColumn()
-    cedula: number
+    Ruc_cliente: number
+
+    @OneToMany(() => Vendedor, vendedor => vendedor.cliente)
+    vendedores: Vendedor[];
+    
+    @Column()
+    Nombres_cliente: string
 
     @Column()
-    nombre: string
+    Apellidos_cliente: string
 
     @Column()
-    apellido1: string
+    Direccion_cliente: string
 
     @Column()
-    apellido2: string
-
-    @Column({type:'date'})
-    fechaNacimiento: Date
-
-    @Column({type:'enum',enum:['M','F','I']})
-    genero: string
-
-    @Column({ type: 'boolean', default: true })
-    estado: boolean
+    Telefono_cliente: number
 
 }

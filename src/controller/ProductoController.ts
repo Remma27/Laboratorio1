@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 
-class ClienteControlller {
+class ProductoController {
   static getAll = async (req: Request, resp: Response) => {
     return resp.status(200).json({mensaje:'Ok'});
   };
@@ -10,4 +10,4 @@ class ClienteControlller {
   };
 }
 
-export default ClienteControlller;
+export default ProductoController;
