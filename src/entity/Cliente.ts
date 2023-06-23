@@ -1,25 +1,29 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm"
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
 import { Vendedor } from "./Vendedor";
+import { IsNotEmpty } from "class-validator";
 
 @Entity()
 export class Cliente {
+  @PrimaryGeneratedColumn()
+  @IsNotEmpty({ message: "Falta el Numero" })
+  Ruc_cliente: number;
 
-    @PrimaryGeneratedColumn()
-    Ruc_cliente: number
+  @OneToMany(() => Vendedor, (vendedor) => vendedor.cliente)
+  vendedores: Vendedor[];
 
-    @OneToMany(() => Vendedor, vendedor => vendedor.cliente)
-    vendedores: Vendedor[];
-    
-    @Column()
-    Nombres_cliente: string
+  @Column()
+  @IsNotEmpty({ message: "Falta el nombre" })
+  Nombres_cliente: string;
 
-    @Column()
-    Apellidos_cliente: string
+  @Column()
+  @IsNotEmpty({ message: "Faltan los apellidos" })
+  Apellidos_cliente: string;
 
-    @Column()
-    Direccion_cliente: string
+  @Column()
+  @IsNotEmpty({ message: "Falta la direccion" })
+  Direccion_cliente: string;
 
-    @Column()
-    Telefono_cliente: number
-
+  @Column()
+  @IsNotEmpty({ message: "Falta el numero" })
+  Telefono_cliente: number;
 }
