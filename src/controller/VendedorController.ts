@@ -22,15 +22,15 @@ class VendedorControlller {
   static getById = async (req: Request, resp: Response) => {
     try {
       const repo = AppDataSource.getRepository(Vendedor);
-      const Codigo_vendedor = parseInt(req.params["Codigo_vendedor"]);
-      if (!Codigo_vendedor) {
-        Codigo_vendedor;
+      const Codigo_Vendedor = parseInt(req.params["Codigo_Vendedor"]);
+      if (!Codigo_Vendedor) {
+        Codigo_Vendedor;
         return resp.status(404).json({ mensaje: "No se indica el codigo" });
       }
       let vendedor;
       try {
         vendedor = await repo.findOneOrFail({
-          where: { Codigo_vendedor: Codigo_vendedor },
+          where: { Codigo_Vendedor: Codigo_Vendedor },
         });
       } catch (error) {
         return resp.status(404).json({ mensaje: "No se encontro" });
