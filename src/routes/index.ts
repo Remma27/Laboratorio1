@@ -1,14 +1,12 @@
 import { Router } from "express";
 import Cliente from "./Cliente";
-import Cabecera_Factura from "./Cabecera_Factura";
-import Detalle_Factura from "./Detalle_Factura";
+import Factura from "./Factura";
 import Producto from "./Producto";
 import Proovedor from "./Proveedor";
 import Vendedor from "./Vendedor";
 const routes = Router();
-routes.use("/Cabecera_Factura", Cabecera_Factura);
 routes.use("/Cliente", Cliente);
-routes.use("/Detalle_Factura", Detalle_Factura);
+routes.use("/Factura", Factura);
 routes.use("/Producto", Producto);
 routes.use("/Proveedor", Proovedor);
 routes.use("/Vendedor", Vendedor);

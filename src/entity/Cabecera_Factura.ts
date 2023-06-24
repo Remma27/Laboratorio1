@@ -24,12 +24,12 @@ export class Cabecera_Factura {
   @IsNotEmpty({ message: "Falta la fecha" })
   Fecha: Date;
 
-  @ManyToOne(() => Cliente)
+  @ManyToOne(() => Cliente, { cascade: true })
   @JoinColumn({ name: "Ruc_cliente" })
   @IsNotEmpty({ message: "Falta el ID del Cliente" })
   cliente: Cliente;
 
-  @ManyToOne(() => Vendedor)
+  @ManyToOne(() => Vendedor, { cascade: true })
   @JoinColumn({ name: "Codigo_vendedor" })
   @IsNotEmpty({ message: "Falta el Codigo de vendedor" })
   vendedor: Vendedor;

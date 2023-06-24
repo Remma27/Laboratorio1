@@ -23,11 +23,13 @@ export class Detalle_Factura {
   @IsNotEmpty({ message: "Falta la cantidad" })
   Cantidad: number;
 
-  @ManyToOne(() => Cabecera_Factura)
+  @ManyToOne(() => Cabecera_Factura, (cabecera) => cabecera.detalles, {
+    cascade: true,
+  })
   @JoinColumn({ name: "Numero" })
   cabecera: Cabecera_Factura;
 
-  @ManyToOne(() => Producto)
+  @ManyToOne(() => Producto, { cascade: true })
   @JoinColumn({ name: "Codigo_Producto" })
   @IsNotEmpty({ message: "Falta el codigo de producto" })
   producto: Producto;
