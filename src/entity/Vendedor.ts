@@ -5,7 +5,9 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from "typeorm";
+import { Cabecera_Factura } from "./Cabecera_Factura";
 
 @Entity()
 export class Vendedor {
@@ -32,4 +34,7 @@ export class Vendedor {
   @Column()
   @IsNotEmpty({ message: "Falta el celular del vendedor" })
   Celular_vendedor: number;
+
+  @OneToMany(() => Cabecera_Factura, (cabecera) => cabecera.vendedor)
+  vendedores: Vendedor[];
 }

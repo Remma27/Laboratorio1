@@ -8,9 +8,6 @@ export class Proveedor {
   @IsNotEmpty({ message: "Falta el codigo del proveedor" })
   Codigo_proveedor: number;
 
-  @OneToMany(() => Producto, (producto) => producto.proveedor)
-  productos: Producto[];
-
   @Column()
   @IsNotEmpty({ message: "Falta el nombre del proveedor" })
   Nombres_proveedor: string;
@@ -30,4 +27,7 @@ export class Proveedor {
   @Column()
   @IsNotEmpty({ message: "Falta el telefono del proveedor" })
   Telefono_proveedor: number;
+
+  @OneToMany(() => Producto, (producto) => producto.proveedor)
+  productos: Producto[];
 }

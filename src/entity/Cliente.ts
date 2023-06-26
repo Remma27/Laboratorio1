@@ -1,15 +1,13 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
 import { Vendedor } from "./Vendedor";
 import { IsNotEmpty } from "class-validator";
+import { Cabecera_Factura } from "./Cabecera_Factura";
 
 @Entity()
 export class Cliente {
   @PrimaryGeneratedColumn()
   @IsNotEmpty({ message: "Falta el Numero" })
   Ruc_cliente: number;
-
-  @OneToMany(() => Vendedor, (vendedor) => vendedor.cliente)
-  vendedores: Vendedor[];
 
   @Column()
   @IsNotEmpty({ message: "Falta el nombre" })
@@ -26,4 +24,7 @@ export class Cliente {
   @Column()
   @IsNotEmpty({ message: "Falta el numero" })
   Telefono_cliente: number;
+
+  @OneToMany(() => Cabecera_Factura, (cabecera) => cabecera.cliente)
+  clientes: Cliente[];
 }

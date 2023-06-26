@@ -16,9 +16,6 @@ export class Producto {
   @IsNotEmpty({ message: "Falta el codigo" })
   Codigo_producto: number;
 
-  @OneToMany(() => Detalle_Factura, (detalle) => detalle.producto)
-  detalles: Detalle_Factura[];
-
   @Column()
   @IsNotEmpty({ message: "Falta la descripcion" })
   Descripcion_producto: string;
@@ -39,4 +36,7 @@ export class Producto {
   @JoinColumn({ name: "Codigo_proveedor" })
   @IsNotEmpty({ message: "Falta el codigo del proveedor" })
   proveedor: Proveedor;
+
+  @OneToMany(() => Detalle_Factura, (detalle) => detalle.producto)
+  detallesFactura: Detalle_Factura[];
 }

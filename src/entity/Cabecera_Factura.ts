@@ -17,9 +17,6 @@ export class Cabecera_Factura {
   @IsNotEmpty({ message: "Falta el Numero" })
   Numero: number;
 
-  @OneToMany(() => Detalle_Factura, (detalle) => detalle.cabecera)
-  detalles: Detalle_Factura[];
-
   @Column()
   @IsNotEmpty({ message: "Falta la fecha" })
   Fecha: Date;
@@ -33,4 +30,9 @@ export class Cabecera_Factura {
   @JoinColumn({ name: "Codigo_vendedor" })
   @IsNotEmpty({ message: "Falta el Codigo de vendedor" })
   vendedor: Vendedor;
+
+  @OneToMany(() => Detalle_Factura, (detalle) => detalle.cabeceraFactura, {
+    cascade: true,
+  })
+  detallesFactura: Detalle_Factura[];
 }

@@ -5,143 +5,225 @@ import { AppDataSource } from "../data.-source";
 import { Detalle_Factura } from "../entity/Detalle_Factura";
 
 class FacturaController {
-  static crearFactura = async (req: Request, resp: Response) => {
+  static getAll = async (req: Request, resp: Response) => {
+    try {
+      const repoFact = AppDataSource.getRepository(Cabecera_Factura);
+      let lista;
+      try {
+        lista = await repoFact.find({
+          relations: [
+            "cliente",
+            "vendedor",
+            "detallesFactura",
+            "detallesFactura.producto",
+          ],
+        });
+      } catch (error) {
+        return resp.status(404).json({ mensaje: "No se encontraron datos" });
+      }
+      if (lista.length == 0) {
+        return resp.status(404).json({ mensaje: "No se encontraron datos" });
+      }
+
+      return resp.status(200).json(lista);
+    } catch (error) {
+      resp.status(400).json({ mensaje: "Error al cargar datos" });
+    }
+  };
+
+  static getById = async (req: Request, resp: Response) => {
+    try {
+      const Numero = parseInt(req.params["Numero"]);
+      if (!Numero) {
+        return resp.status(404).json({ mensaje: "No se indica el numero" });
+      }
+      const cabeceraRepo = AppDataSource.getRepository(Cabecera_Factura);
+      let cabecera;
+      try {
+        cabecera = await cabeceraRepo.findOneOrFail({
+          where: { Numero },
+          relations: [
+            "cliente",
+            "vendedor",
+            "detallesFactura",
+            "detallesFactura.producto",
+          ],
+        });
+      } catch (error) {
+        return resp
+          .status(404)
+          .json({ mensaje: "No se encontro la factura con ese numero" });
+      }
+      return resp.status(200).json(cabecera);
+    } catch (error) {
+      return resp.status(400).json({ mensaje: error });
+    }
+  };
+
+  /* 
+  Este es el formato que se tiene que utilizar:
+  {
+  "Numero": 8,
+  "Fecha": "2023-06-25",
+  "cliente": "1",
+  "vendedor": "1",
+  "Id_Detalle": 9,
+  "Cantidad": 3,
+  "Codigo_producto": "1"
+}
+
+  */
+  static add = async (req: Request, resp: Response) => {
     try {
       const {
         Numero,
-        Ruc_cliente,
-        Codigo_vendedor,
+        Fecha,
+        cliente,
+        vendedor,
         Id_Detalle,
         Cantidad,
         Codigo_producto,
       } = req.body;
 
-      let Cabecera = new Cabecera_Factura();
-      Cabecera.Numero = Numero;
-      let fecha = new Date();
-      Cabecera.Fecha = fecha;
-      Cabecera.cliente = Ruc_cliente;
-      Cabecera.vendedor = Codigo_vendedor;
+      const cabeceraRepo = AppDataSource.getRepository(Cabecera_Factura);
+      const detalleRepo = AppDataSource.getRepository(Detalle_Factura);
 
-      let detalle = new Detalle_Factura();
-      detalle.Id_Detalle = Id_Detalle;
-      detalle.Numero = Numero;
-      detalle.Cantidad = Cantidad;
-      detalle.producto = Codigo_producto;
-
-      const errors = await validate(Cabecera, {
-        validationError: { target: false, value: false },
-      });
-
-      if (errors.length > 0) {
-        return resp.status(400).json(errors);
-      }
-
-      const errors2 = await validate(detalle, {
-        validationError: { target: false, value: false },
-      });
-
-      if (errors2.length > 0) {
-        return resp.status(400).json(errors2);
-      }
-
-      const repoCabecera = AppDataSource.getRepository(Cabecera_Factura);
-      const repoDetalle = AppDataSource.getRepository(Detalle_Factura);
-      let exist = await repoCabecera.findOne({ where: { Numero } });
-      if (exist) {
-        return resp
-          .status(400)
-          .json({ mensaje: "Ya existe en la base de datos." });
-      }
-
-      try {
-        await repoCabecera.save(Cabecera);
-        await repoDetalle.save(detalle);
-        return resp
-          .status(201)
-          .json({ mensaje: "Se ha creado la factura y su detalle" });
-      } catch (error) {
-        resp.status(400).json(error);
-      }
-    } catch (error) {
-      return resp.status(400).json({ mensaje: error });
-    }
-  };
-
-  static obtenerFactura = async (req: Request, resp: Response) => {
-    try {
-      const Numero = parseInt(req.params.Numero);
-
-      const facturaRepository = AppDataSource.getRepository(Cabecera_Factura);
-      const factura = await facturaRepository.findOne({
-        where: { Numero },
-        relations: ["detalles"],
-      });
-
-      if (!factura) {
+      const factura = await cabeceraRepo.findOne({ where: { Numero } });
+      if (factura) {
         return resp
           .status(404)
-          .json({ mensaje: "No se encontró la factura especificada" });
+          .json({ mensaje: "La factura ya existe en la base de datos" });
       }
 
-      return resp.status(200).json({ factura });
+      const fecha = new Date(Fecha);
+      let cabeceraFactura = new Cabecera_Factura();
+      cabeceraFactura.Numero = Numero;
+      cabeceraFactura.Fecha = fecha;
+      cabeceraFactura.cliente = cliente;
+      cabeceraFactura.vendedor = vendedor;
+
+      let detalleFactura = new Detalle_Factura();
+      detalleFactura.Id_Detalle = Id_Detalle;
+      detalleFactura.Cantidad = Cantidad;
+      detalleFactura.producto = Codigo_producto;
+      detalleFactura.cabeceraFactura = cabeceraFactura; // Asociar el detalle con la cabecera
+
+      // Validar con class-validator
+      const errorsCabecera = await validate(cabeceraFactura, {
+        validationError: { target: false, value: false },
+      });
+
+      if (errorsCabecera.length > 0) {
+        return resp.status(400).json(errorsCabecera);
+      }
+
+      // Validar con class-validator
+      const errorsDetalle = await validate(detalleFactura, {
+        validationError: { target: false, value: false },
+      });
+
+      if (errorsDetalle.length > 0) {
+        return resp.status(400).json(errorsDetalle);
+      }
+
+      await cabeceraRepo.save(cabeceraFactura);
+      await detalleRepo.save(detalleFactura);
+      return resp.status(201).json({ mensaje: "Factura creada" });
     } catch (error) {
-      return resp.status(400).json({ mensaje: error.message });
+      return resp.status(400).json({ mensaje: error });
     }
   };
 
-  static modificarFactura = async (req: Request, resp: Response) => {
+  static update = async (req: Request, resp: Response) => {
     try {
       const Numero = parseInt(req.params["Numero"]);
-      const { Ruc_cliente, Codigo_vendedor, Cantidad, Codigo_producto } =
-        req.body;
+      const {
+        Fecha,
+        cliente,
+        vendedor,
+        Id_Detalle,
+        Cantidad,
+        Codigo_producto,
+      } = req.body;
 
-      const repoCabecera = AppDataSource.getRepository(Cabecera_Factura);
-      const repoDetalle = AppDataSource.getRepository(Detalle_Factura);
+      const cabeceraRepo = AppDataSource.getRepository(Cabecera_Factura);
+      const detalleRepo = AppDataSource.getRepository(Detalle_Factura);
 
-      const factura = await repoCabecera.findOne({ where: { Numero: Numero } });
-      if (!factura) {
+      const cabeceraFactura = await cabeceraRepo.findOne({
+        where: { Numero: Numero },
+      });
+
+      if (!cabeceraFactura) {
         return resp
-          .status(400)
-          .json({ mensaje: "No existe en la base de datos." });
+          .status(404)
+          .json({ mensaje: "La factura no existe en la base de datos" });
       }
 
-      let fecha = new Date();
-      factura.Fecha = fecha;
-      factura.cliente = Ruc_cliente;
-      factura.vendedor = Codigo_vendedor;
+      const fecha = new Date(Fecha);
+      cabeceraFactura.Fecha = fecha;
+      cabeceraFactura.cliente = cliente;
+      cabeceraFactura.vendedor = vendedor;
 
-      const errors = await validate(factura, {
+      let detalleFactura = new Detalle_Factura();
+      detalleFactura.Id_Detalle = Id_Detalle;
+      detalleFactura.Cantidad = Cantidad;
+      detalleFactura.producto = Codigo_producto;
+      detalleFactura.cabeceraFactura = cabeceraFactura; // Asociar el detalle con la cabecera
+
+      // Validar con class-validator
+      const errorsCabecera = await validate(cabeceraFactura, {
         validationError: { target: false, value: false },
       });
 
-      if (errors.length > 0) {
-        return resp.status(400).json(errors);
+      if (errorsCabecera.length > 0) {
+        return resp.status(400).json(errorsCabecera);
       }
 
-      let detalle = new Detalle_Factura();
-      detalle.Cantidad = Cantidad;
-      detalle.producto = Codigo_producto;
-      detalle.cabecera = factura;
-
-      const errors2 = await validate(detalle, {
+      // Validar con class-validator
+      const errorsDetalle = await validate(detalleFactura, {
         validationError: { target: false, value: false },
       });
 
-      if (errors2.length > 0) {
-        return resp.status(400).json(errors2);
+      if (errorsDetalle.length > 0) {
+        return resp.status(400).json(errorsDetalle);
       }
 
-      try {
-        await repoDetalle.save(detalle);
-        return resp
-          .status(201)
-          .json({ mensaje: "Se ha guardado correctamente" });
-      } catch (error) {
-        resp.status(400).json(error);
-      }
+      await cabeceraRepo.save(cabeceraFactura);
+      await detalleRepo.save(detalleFactura);
+
+      return resp.status(200).json({ mensaje: "Factura actualizada" });
     } catch (error) {
       return resp.status(400).json({ mensaje: error });
+    }
+  };
+
+  static delete = async (req: Request, resp: Response) => {
+    try {
+      const Numero = parseInt(req.params["Numero"]);
+      if (!Numero) {
+        return resp
+          .status(404)
+          .json({ mensaje: "No se indica el número de factura" });
+      }
+
+      const cabeceraRepo = AppDataSource.getRepository(Cabecera_Factura);
+      const detalleRepo = AppDataSource.getRepository(Detalle_Factura);
+
+      const cabecera = await cabeceraRepo.findOne({
+        where: { Numero },
+        relations: ["detallesFactura"],
+      });
+
+      if (!cabecera) {
+        return resp.status(404).json({ mensaje: "No se encontró la factura" });
+      }
+
+      await detalleRepo.remove(cabecera.detallesFactura);
+      await cabeceraRepo.remove(cabecera);
+
+      return resp.status(200).json({ mensaje: "Factura eliminada" });
+    } catch (error) {
+      return resp.status(400).json({ mensaje: "Error al eliminar la factura" });
     }
   };
 }
