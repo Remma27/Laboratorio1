@@ -11,6 +11,7 @@ class FacturaController {
       let lista;
       try {
         lista = await repoFact.find({
+          where: { Estado: true },
           relations: [
             "cliente",
             "vendedor",
@@ -41,7 +42,7 @@ class FacturaController {
       let cabecera;
       try {
         cabecera = await cabeceraRepo.findOneOrFail({
-          where: { Numero },
+          where: { Numero, Estado: true },
           relations: [
             "cliente",
             "vendedor",
@@ -83,6 +84,7 @@ class FacturaController {
         Id_Detalle,
         Cantidad,
         Codigo_producto,
+        Estado,
       } = req.body;
 
       const cabeceraRepo = AppDataSource.getRepository(Cabecera_Factura);
@@ -101,6 +103,7 @@ class FacturaController {
       cabeceraFactura.Fecha = fecha;
       cabeceraFactura.cliente = cliente;
       cabeceraFactura.vendedor = vendedor;
+      cabeceraFactura.Estado = true;
 
       let detalleFactura = new Detalle_Factura();
       detalleFactura.Id_Detalle = Id_Detalle;
@@ -150,7 +153,7 @@ class FacturaController {
       const detalleRepo = AppDataSource.getRepository(Detalle_Factura);
 
       const cabeceraFactura = await cabeceraRepo.findOne({
-        where: { Numero: Numero },
+        where: { Numero: Numero, Estado: true },
       });
 
       if (!cabeceraFactura) {
@@ -218,8 +221,9 @@ class FacturaController {
         return resp.status(404).json({ mensaje: "No se encontró la factura" });
       }
 
-      await detalleRepo.remove(cabecera.detallesFactura);
-      await cabeceraRepo.remove(cabecera);
+      cabecera.Estado = false;
+      await detalleRepo.save(cabecera.detallesFactura);
+      await cabeceraRepo.save(cabecera);
 
       return resp.status(200).json({ mensaje: "Factura eliminada" });
     } catch (error) {

@@ -35,4 +35,8 @@ export class Cabecera_Factura {
     cascade: true,
   })
   detallesFactura: Detalle_Factura[];
+
+  @Column({ default: true })
+  @IsNotEmpty({ message: "Falta el estado" })
+  Estado: Boolean;
 }
